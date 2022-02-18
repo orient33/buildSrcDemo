@@ -3,7 +3,8 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
-apply<CustomPlugin2>()
+//apply<CustomPlugin2>()
+apply<ExamplePlugin>()
 android {
     compileSdk = (31)
 
@@ -20,7 +21,7 @@ android {
 //            minifyEnabled(false)
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
+//                "proguard-rules.pro"
             )
         }
     }
