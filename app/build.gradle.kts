@@ -4,7 +4,8 @@ plugins {
 }
 
 //apply<CustomPlugin2>()
-apply<ExamplePlugin>()
+apply<AJPlugin>()
+apply<AppJointPlugin>()
 android {
     compileSdk = (31)
 
