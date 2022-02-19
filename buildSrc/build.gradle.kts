@@ -21,4 +21,5 @@ dependencies {
 }
 dependencies {
     implementation("com.android.tools.build:gradle:7.1.1")
+    implementation("org.ow2.asm:asm-util:7.0")
 }
