@@ -1,5 +1,10 @@
-import com.android.build.api.instrumentation.*
 import com.android.build.api.variant.AndroidComponentsExtension
+import com.android.build.api.instrumentation.AsmClassVisitorFactory
+import com.android.build.api.instrumentation.ClassContext
+import com.android.build.api.instrumentation.ClassData
+import com.android.build.api.instrumentation.FramesComputationMode
+import com.android.build.api.instrumentation.InstrumentationParameters
+import com.android.build.api.instrumentation.InstrumentationScope
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.provider.Property
@@ -8,7 +13,7 @@ import org.objectweb.asm.ClassVisitor
 import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 
-abstract class AppJointPlugin : Plugin<Project> {
+abstract class AJPlugin : Plugin<Project> {
 
     var mProject: Project? = null
 
@@ -31,6 +36,7 @@ abstract class AppJointPlugin : Plugin<Project> {
         @get:Input
         val writeToStdout: Property<Boolean>
     }
+
     abstract class ExampleClassVisitorFactory :
         AsmClassVisitorFactory<ExampleParams> {
 
@@ -42,7 +48,7 @@ abstract class AppJointPlugin : Plugin<Project> {
         }
 
         override fun isInstrumentable(classData: ClassData): Boolean {
-            return classData.className == "io.github.prototypez.appjoint.AppJoint"
+            return classData.className.startsWith("com.example.AJ")
         }
     }
 
@@ -56,7 +62,7 @@ abstract class AppJointPlugin : Plugin<Project> {
         ): MethodVisitor {
             val mv = super.visitMethod(access, name, descriptor, signature, exceptions)
             println("a=$access, name=$name, des=$descriptor, sig=$signature")
-            if (2 == access && name == "<init>" && descriptor == "()V") {
+            if (access == 1 && name == "<init>" && descriptor == "()V") {
                 return AddCode2Method(mv)
             }
             return mv
@@ -65,9 +71,8 @@ abstract class AppJointPlugin : Plugin<Project> {
 
     class AddCode2Method(mv: MethodVisitor) : MethodVisitor(Opcodes.ASM7, mv) {
 
-        val routerAndImpl: Set<Pair<String, String>> = setOf(
-            Pair("pair1", "pair2"),
-            Pair("pair11", "pair22")
+        val routerAndImpl: Set<Triple<String, String, String>> = setOf(
+            Triple("trip1", "trip2", "trip3")
         )
 
         override fun visitInsn(opcode: Int) {
@@ -81,23 +86,17 @@ abstract class AppJointPlugin : Plugin<Project> {
                     println("for each. $it")
                     mv.visitVarInsn(Opcodes.ALOAD, 0)
                     mv.visitFieldInsn(
-                        Opcodes.GETFIELD,
-                        "io/github/prototypez/appjoint/AppJoint",
-                        "routersMap",
-                        "Ljava/util/Map;"
+                        Opcodes.GETFIELD, "com/example/AJ", "map", "Ljava/util/Map;"
                     )
-                    println("visit 1")
                     mv.visitLdcInsn(it.first)
-                    println("visit 2")
                     mv.visitLdcInsn(it.second)
                     println("visitMethodInsn 1")
                     mv.visitMethodInsn(
                         Opcodes.INVOKEINTERFACE,
-                        "java/util/Map",
-                        "put",
-                        "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;",
-                        true
+                        "java/util/Map", "put",
+                        "(Ljava/lang/Object;Ljava/lang/Object;)Ljava/lang/Object;", true
                     )
+                    println("pop")
                     mv.visitInsn(Opcodes.POP)
                     println("end for $it")
                 }
